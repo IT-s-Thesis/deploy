@@ -1,0 +1,85 @@
+version: '3'
+
+networks:
+  proxy:
+    external: true
+  internal:
+    external: false
+    
+services:
+  web:
+    image: odoo:12.0
+    
+    depends_on:
+      - db
+    ports:
+      - "8069-8071:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./src:/mnt/extra-addons
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.odoo.frontend.rule=Host:web.localhost"
+      - "traefik.odoo.port=8069"
+      - "traefik.odoo.backend=odoo"
+      - "traefik.odoo.weight=10"
+    networks:
+      - internal
+      - proxy
+  db:
+    image: postgres:10
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+    networks:
+      - internal
+    labels:
+      - "traefik.enable=false"
+  client:
+    container_name: client
+    build: ./client
+    volumes:
+      - './client:/app'
+      - '/app/node_modules'
+    ports:
+      - '5001:5001'
+    environment:
+      - NODE_ENV=development
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.client.frontend.rule=Host:client.localhost"
+      - "traefik.client.port=5001"
+      - "traefik.client.backend=client"
+    networks:
+      - internal
+      - proxy
+  proxy:
+    image: traefik:1.7-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    labels:
+      - "traefik.docker.network=proxy"
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=Host:traefik.localhost"
+      - "traefik.port=8080"
+    networks:
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/traefik.toml:/traefik.toml
+      - ./traefik/acme:/acme
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+
+  

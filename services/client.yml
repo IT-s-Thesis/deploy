@@ -1,0 +1,31 @@
+version: '3.5'
+
+networks:
+  traefik-net:
+    name: traefik-net
+    driver: overlay
+    external: true
+  web-net:
+    name: web-net
+    driver: overlay
+    
+services:
+  client:
+    image: peterdinh/client
+    ports:
+      - '5001:5001'
+    environment:
+      - NODE_ENV=development
+    deploy:
+      placement:
+        constraints:
+          - node.role==worker
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=proxy"
+        - "traefik.client.frontend.rule=Host:client.localhost"
+        - "traefik.client.port=5001"
+        - "traefik.client.backend=client"
+    networks:
+      - traefik-net
+      - web-net

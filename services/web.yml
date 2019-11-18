@@ -1,0 +1,56 @@
+version: '3.5'
+
+networks:
+  traefik-net:
+    name: traefik-net
+    driver: overlay
+    external: true
+  web-net:
+    name: web-net
+    driver: overlay
+    
+services:
+  web:
+    image: peterdinh/odoo
+    environment:
+      - HOST=db
+    ports:
+      - "8069:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+    networks:
+      - traefik-net
+      - web-net
+    deploy:
+      placement:
+        constraints:
+          - node.role==worker
+      labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-net"
+      - "traefik.odoo.frontend.rule=Host:web.$USE_HOSTNAME"
+      - "traefik.odoo.port=8069"
+      - "traefik.odoo.backend=odoo"
+      - "traefik.odoo.weight=10"
+  db:
+    image: postgres:10
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+    networks:
+      - traefik-net
+      - web-net
+    deploy:
+      placement:
+        constraints:
+          - node.role==manager
+      labels:
+      - "traefik.enable=false"
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
