@@ -23,7 +23,7 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=proxy"
-        - "traefik.client.frontend.rule=Host:client.localhost"
+        - "traefik.client.frontend.rule=Host:client.$USE_HOSTNAME"
         - "traefik.client.port=5001"
         - "traefik.client.backend=client"
     networks:
