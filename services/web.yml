@@ -1,5 +1,13 @@
 version: '3.5'
 
+networks:
+  traefik-net:
+    driver: overlay
+    external: true
+  web-net:
+    driver: overlay
+    external: true
+
 services:
   web:
     image: peterdinh/odoo
