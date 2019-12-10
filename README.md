@@ -141,6 +141,12 @@ Traefik ---> Web ---> Client ---> Delivery
 > export USE_HOSTNAME=$(cat /etc/hostname) 
 ```
 
+* Tao cac network de ket noi cac service
+```bash
+> docker network create --driver=overlay traefik-net
+> docker network create --driver=overlay web-net
+```
+
 * Tao service Traefik:
 ```bash
 > docker stack deploy -c services/traefik.yml traefik
