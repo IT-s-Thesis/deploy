@@ -10,11 +10,12 @@ networks:
     
 services:
   client:
-    image: peterdinh/client
+    image: peterdinh/client:latest
     ports:
       - '5001:5001'
     environment:
       - NODE_ENV=development
+      - DANGEROUSLY_DISABLE_HOST_CHECK=true
     deploy:
       placement:
         constraints:

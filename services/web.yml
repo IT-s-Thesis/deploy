@@ -10,7 +10,7 @@ networks:
 
 services:
   web:
-    image: peterdinh/odoo
+    image: peterdinh/odoo:latest
     environment:
       - HOST=db
     ports:
